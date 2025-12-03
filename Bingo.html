@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente Bingo 4x4 - Sin Auto Victoria</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e6e6e6;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            color: #4dccbd;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            color: #a3d9ff;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        .instructions {
+            background-color: rgba(30, 60, 114, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        .important-note {
+            background-color: rgba(255, 152, 0, 0.2);
+            border-left: 4px solid #ff9800;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        @media (min-width: 768px) {
+            .game-area {
+                flex-direction: row;
+                align-items: flex-start;
+                justify-content: center;
+            }
+        }
+        
+        .board-container {
+            flex: 1;
+            max-width: 500px;
+        }
+        
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        
+        .cell {
+            aspect-ratio: 1 / 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            position: relative;
+            border: 3px solid transparent;
+            background-color: #2d3047;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .cell:active {
+            transform: scale(0.98);
+        }
+        
+        /* Estados de las celdas */
+        .cell.empty {
+            background-color: #3a3e5c;
+        }
+        
+        .cell.good {
+            background-color: #2e7d32;
+            color: white;
+        }
+        
+        .cell.bad {
+            background-color: #c62828;
+            color: white;
+        }
+        
+        /* Recomendaciones */
+        .cell.recommended {
+            border-color: #ffeb3b;
+            box-shadow: 0 0 12px rgba(255, 235, 59, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        .cell.high-priority {
+            border-color: #ff9800;
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.7);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 8px rgba(255, 235, 59, 0.5); }
+            50% { box-shadow: 0 0 16px rgba(255, 235, 59, 0.8); }
+            100% { box-shadow: 0 0 8px rgba(255, 235, 59, 0.5); }
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .reset-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            background-color: #d32f2f;
+            transform: translateY(-2px);
+        }
+        
+        .legend-btn {
+            background-color: #2196f3;
+            color: white;
+        }
+        
+        .legend-btn:hover {
+            background-color: #1976d2;
+            transform: translateY(-2px);
+        }
+        
+        .check-win-btn {
+            background-color: #4caf50;
+            color: white;
+        }
+        
+        .check-win-btn:hover {
+            background-color: #388e3c;
+            transform: translateY(-2px);
+        }
+        
+        .check-win-btn:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .info-panel {
+            flex: 1;
+            max-width: 300px;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .info-panel h3 {
+            color: #4dccbd;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+        
+        .stats {
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .potential-lines {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .potential-line {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .potential-line.almost {
+            background-color: rgba(76, 175, 80, 0.2);
+            border-left: 4px solid #4caf50;
+        }
+        
+        .lines-container {
+            margin-top: 20px;
+        }
+        
+        .lines-list {
+            list-style-type: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .line-item {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .line-item.active {
+            background-color: rgba(77, 204, 189, 0.2);
+            border-left: 4px solid #4dccbd;
+        }
+        
+        .line-item.inactive {
+            opacity: 0.6;
+        }
+        
+        .line-item.almost-complete {
+            background-color: rgba(76, 175, 80, 0.3);
+            border-left: 4px solid #4caf50;
+        }
+        
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .legend-recommended {
+            border: 3px solid #ffeb3b;
+            background-color: #3a3e5c;
+        }
+        
+        .legend-high {
+            border: 3px solid #ff9800;
+            background-color: #3a3e5c;
+        }
+        
+        .legend-good {
+            background-color: #2e7d32;
+        }
+        
+        .legend-bad {
+            background-color: #c62828;
+        }
+        
+        .legend-empty {
+            background-color: #3a3e5c;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #a3d9ff;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+        }
+        
+        .win-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(77, 204, 189, 0.7);
+            display: none;
+        }
+        
+        .win-message h2 {
+            color: #4dccbd;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .close-btn {
+            margin-top: 20px;
+            background-color: #4dccbd;
+            color: #1a1a2e;
+        }
+        
+        .close-btn:hover {
+            background-color: #3db8a9;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 99;
+            display: none;
+        }
+        
+        .winning-line {
+            animation: winPulse 1.5s infinite;
+        }
+        
+        @keyframes winPulse {
+            0% { box-shadow: 0 0 10px rgba(76, 175, 80, 0.7); }
+            50% { box-shadow: 0 0 25px rgba(76, 175, 80, 0.9); }
+            100% { box-shadow: 0 0 10px rgba(76, 175, 80, 0.7); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Asistente Bingo 4x4</h1>
+            <p class="subtitle">Analiza tus jugadas y te recomienda las mejores casillas</p>
+            <div class="instructions">
+                <p><strong>Instrucciones:</strong> Haz clic en una casilla para marcar el resultado de tu jugada externa. Verde para objeto bueno, rojo para objeto malo. El asistente analizará automáticamente el tablero y resaltará las casillas más prometedoras.</p>
+                <div class="important-note">
+                    <strong>Importante:</strong> El asistente NO declara automáticamente victoria. Cuando tengas una línea que creas que podría estar completa, usa el botón "Verificar Líneas Completas" para confirmar.
+                </div>
+            </div>
+        </header>
+        
+        <div class="game-area">
+            <div class="board-container">
+                <div class="board" id="board">
+                    <!-- Las celdas se generarán con JavaScript -->
+                </div>
+                
+                <div class="controls">
+                    <button class="reset-btn" id="resetBtn">
+                        <span>🔄</span> Reiniciar Tablero
+                    </button>
+                    <button class="check-win-btn" id="checkWinBtn">
+                        <span>✅</span> Verificar Líneas Completas
+                    </button>
+                    <button class="legend-btn" id="legendBtn">
+                        <span>📋</span> Mostrar Leyenda
+                    </button>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <h3>Información del Juego</h3>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        <span>Casillas verdes:</span>
+                        <span id="greenCount">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Casillas rojas:</span>
+                        <span id="redCount">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Casillas vacías:</span>
+                        <span id="emptyCount">16</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Líneas activas:</span>
+                        <span id="activeLines">10</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Casillas recomendadas:</span>
+                        <span id="recommendedCount">0</span>
+                    </div>
+                </div>
+                
+                <div class="potential-lines">
+                    <h4>Líneas Casi Completas</h4>
+                    <div id="almostCompleteLines">
+                        <!-- Se llenará con líneas que tienen 3 verdes -->
+                    </div>
+                </div>
+                
+                <div class="lines-container">
+                    <h4>Líneas Prometedoras</h4>
+                    <ul class="lines-list" id="linesList">
+                        <!-- Las líneas se actualizarán con JavaScript -->
+                    </ul>
+                </div>
+                
+                <div class="legend" id="legend">
+                    <div class="legend-item">
+                        <div class="legend-color legend-empty"></div>
+                        <span>Sin jugar</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-good"></div>
+                        <span>Objeto bueno</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-bad"></div>
+                        <span>Objeto malo</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-recommended"></div>
+                        <span>Recomendada</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-high"></div>
+                        <span>Alta prioridad</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Asistente Inteligente para Bingo 4x4 - Analiza y recomienda jugadas para completar una línea de 4 verdes</p>
+        </footer>
+    </div>
+    
+    <div class="modal-overlay" id="modalOverlay"></div>
+    
+    <div class="win-message" id="winMessage">
+        <h2>¡Línea Completa!</h2>
+        <p>Has confirmado una línea de 4 objetos buenos.</p>
+        <p>¡Felicidades!</p>
+        <button class="close-btn" id="closeWinBtn">Continuar</button>
+    </div>
+
+    <script>
+        // Estado del juego
+        const gameState = {
+            board: Array(16).fill(0), // 0 = vacío, 1 = bueno, -1 = malo
+            lines: [
+                // Filas
+                [0, 1, 2, 3],
+                [4, 5, 6, 7],
+                [8, 9, 10, 11],
+                [12, 13, 14, 15],
+                // Columnas
+                [0, 4, 8, 12],
+                [1, 5, 9, 13],
+                [2, 6, 10, 14],
+                [3, 7, 11, 15],
+                // Diagonales
+                [0, 5, 10, 15],
+                [3, 6, 9, 12]
+            ],
+            recommendations: Array(16).fill(0), // Puntuación de recomendación para cada celda
+            gameOver: false,
+            winningLines: [] // Almacena las líneas ganadoras cuando se verifican
+        };
+
+        // Elementos del DOM
+        const boardElement = document.getElementById('board');
+        const resetBtn = document.getElementById('resetBtn');
+        const checkWinBtn = document.getElementById('checkWinBtn');
+        const legendBtn = document.getElementById('legendBtn');
+        const greenCountElement = document.getElementById('greenCount');
+        const redCountElement = document.getElementById('redCount');
+        const emptyCountElement = document.getElementById('emptyCount');
+        const activeLinesElement = document.getElementById('activeLines');
+        const recommendedCountElement = document.getElementById('recommendedCount');
+        const linesListElement = document.getElementById('linesList');
+        const almostCompleteLinesElement = document.getElementById('almostCompleteLines');
+        const winMessageElement = document.getElementById('winMessage');
+        const modalOverlayElement = document.getElementById('modalOverlay');
+        const closeWinBtn = document.getElementById('closeWinBtn');
+
+        // Inicializar el tablero
+        function initBoard() {
+            boardElement.innerHTML = '';
+            
+            for (let i = 0; i < 16; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell empty';
+                cell.dataset.index = i;
+                cell.dataset.state = '0'; // 0 = vacío, 1 = bueno, -1 = malo
+                
+                // Agregar número para referencia
+                const number = document.createElement('div');
+                number.textContent = i + 1;
+                number.style.fontSize = '0.8rem';
+                number.style.position = 'absolute';
+                number.style.top = '5px';
+                number.style.left = '5px';
+                number.style.color = 'rgba(255, 255, 255, 0.4)';
+                cell.appendChild(number);
+                
+                // Evento de clic para cambiar estado
+                cell.addEventListener('click', () => handleCellClick(i));
+                
+                boardElement.appendChild(cell);
+            }
+            
+            updateGameStats();
+            calculateRecommendations();
+            updateCheckWinButton();
+        }
+
+        // Manejar clic en una celda
+        function handleCellClick(index) {
+            if (gameState.gameOver) return;
+            
+            const cell = document.querySelector(`.cell[data-index="${index}"]`);
+            const currentState = parseInt(cell.dataset.state);
+            
+            // Cambiar estado: 0 -> 1 -> -1 -> 0 (ciclo)
+            let newState;
+            if (currentState === 0) {
+                newState = 1; // Verde
+                cell.className = 'cell good';
+                cell.dataset.state = '1';
+            } else if (currentState === 1) {
+                newState = -1; // Rojo
+                cell.className = 'cell bad';
+                cell.dataset.state = '-1';
+            } else {
+                newState = 0; // Vacío
+                cell.className = 'cell empty';
+                cell.dataset.state = '0';
+            }
+            
+            // Actualizar estado del juego
+            gameState.board[index] = newState;
+            
+            // Quitar cualquier efecto de línea ganadora (si se estaba mostrando)
+            removeWinningLineEffects();
+            gameState.winningLines = [];
+            
+            // Recalcular recomendaciones y estadísticas
+            updateGameStats();
+            calculateRecommendations();
+            updateCheckWinButton();
+        }
+
+        // Actualizar estadísticas del juego
+        function updateGameStats() {
+            let greenCount = 0;
+            let redCount = 0;
+            let emptyCount = 0;
+            let activeLinesCount = 0;
+            let recommendedCellsCount = 0;
+            
+            // Contar celdas por estado
+            gameState.board.forEach(state => {
+                if (state === 1) greenCount++;
+                else if (state === -1) redCount++;
+                else emptyCount++;
+            });
+            
+            // Contar líneas activas (sin rojos)
+            const activeLines = gameState.lines.filter(line => {
+                return !line.some(cellIndex => gameState.board[cellIndex] === -1);
+            });
+            activeLinesCount = activeLines.length;
+            
+            // Contar celdas recomendadas
+            gameState.recommendations.forEach(score => {
+                if (score > 0) recommendedCellsCount++;
+            });
+            
+            // Actualizar elementos del DOM
+            greenCountElement.textContent = greenCount;
+            redCountElement.textContent = redCount;
+            emptyCountElement.textContent = emptyCount;
+            activeLinesElement.textContent = activeLinesCount;
+            recommendedCountElement.textContent = recommendedCellsCount;
+            
+            // Actualizar lista de líneas prometedoras
+            updateLinesList(activeLines);
+            
+            // Actualizar líneas casi completas (con 3 verdes)
+            updateAlmostCompleteLines(activeLines);
+        }
+
+        // Actualizar la lista de líneas casi completas (3 verdes)
+        function updateAlmostCompleteLines(activeLines) {
+            almostCompleteLinesElement.innerHTML = '';
+            
+            const almostCompleteLines = activeLines.filter(line => {
+                let greenCount = 0;
+                
+                line.forEach(cellIndex => {
+                    if (gameState.board[cellIndex] === 1) greenCount++;
+                });
+                
+                return greenCount === 3;
+            });
+            
+            if (almostCompleteLines.length === 0) {
+                almostCompleteLinesElement.innerHTML = '<p style="text-align:center; color:#aaa; font-size:0.9rem;">No hay líneas con 3 verdes</p>';
+                return;
+            }
+            
+            almostCompleteLines.forEach((line, index) => {
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'potential-line almost';
+                
+                // Encontrar la celda vacía en esta línea
+                let emptyCellIndex = -1;
+                line.forEach(cellIndex => {
+                    if (gameState.board[cellIndex] === 0) {
+                        emptyCellIndex = cellIndex;
+                    }
+                });
+                
+                // Determinar tipo de línea
+                let lineType = '';
+                const lineIndex = gameState.lines.findIndex(l => 
+                    l[0] === line[0] && 
+                    l[1] === line[1] && 
+                    l[2] === line[2] && 
+                    l[3] === line[3]
+                );
+                
+                if (lineIndex < 4) lineType = `Fila ${lineIndex + 1}`;
+                else if (lineIndex < 8) lineType = `Col ${lineIndex - 3}`;
+                else if (lineIndex === 8) lineType = 'Diagonal \\';
+                else lineType = 'Diagonal /';
+                
+                lineDiv.innerHTML = `
+                    <div>
+                        <strong>${lineType}</strong><br>
+                        <small>Falta casilla ${emptyCellIndex + 1}</small>
+                    </div>
+                    <div style="font-size:1.2rem;">🎯</div>
+                `;
+                
+                almostCompleteLinesElement.appendChild(lineDiv);
+            });
+        }
+
+        // Actualizar la lista de líneas prometedoras
+        function updateLinesList(activeLines) {
+            linesListElement.innerHTML = '';
+            
+            // Ordenar líneas por prometedoras (más verdes primero, luego menos vacías)
+            const scoredLines = activeLines.map(line => {
+                let greenCount = 0;
+                let emptyCount = 0;
+                
+                line.forEach(cellIndex => {
+                    if (gameState.board[cellIndex] === 1) greenCount++;
+                    else if (gameState.board[cellIndex] === 0) emptyCount++;
+                });
+                
+                return { line, greenCount, emptyCount, score: greenCount * 10 - emptyCount };
+            }).sort((a, b) => b.score - a.score);
+            
+            // Mostrar las 5 líneas más prometedoras
+            scoredLines.slice(0, 5).forEach(lineData => {
+                const li = document.createElement('li');
+                
+                // Determinar tipo de línea
+                let lineType = '';
+                const lineIndex = gameState.lines.findIndex(l => 
+                    l[0] === lineData.line[0] && 
+                    l[1] === lineData.line[1] && 
+                    l[2] === lineData.line[2] && 
+                    l[3] === lineData.line[3]
+                );
+                
+                if (lineIndex < 4) lineType = `Fila ${lineIndex + 1}`;
+                else if (lineIndex < 8) lineType = `Col ${lineIndex - 3}`;
+                else if (lineIndex === 8) lineType = 'Diagonal \\';
+                else lineType = 'Diagonal /';
+                
+                // Establecer clase según el estado de la línea
+                if (lineData.greenCount === 3) {
+                    li.className = 'line-item almost-complete';
+                    li.textContent = `${lineType}: 3 verdes - ¡Falta 1!`;
+                } else {
+                    li.className = 'line-item active';
+                    li.textContent = `${lineType}: ${lineData.greenCount} verdes, ${lineData.emptyCount} vacías`;
+                }
+                
+                linesListElement.appendChild(li);
+            });
+            
+            // Si hay menos de 5 líneas activas, agregar líneas inactivas
+            if (scoredLines.length < 5) {
+                const inactiveCount = 5 - scoredLines.length;
+                for (let i = 0; i < inactiveCount; i++) {
+                    const li = document.createElement('li');
+                    li.className = 'line-item inactive';
+                    li.textContent = 'Línea inactiva (tiene rojos)';
+                    linesListElement.appendChild(li);
+                }
+            }
+        }
+
+        // Calcular recomendaciones para cada celda
+        function calculateRecommendations() {
+            // Reiniciar recomendaciones
+            gameState.recommendations = Array(16).fill(0);
+            
+            // Obtener líneas activas (sin rojos)
+            const activeLines = gameState.lines.filter(line => {
+                return !line.some(cellIndex => gameState.board[cellIndex] === -1);
+            });
+            
+            // Para cada línea activa, calcular su valor
+            activeLines.forEach(line => {
+                let greenCount = 0;
+                let emptyCells = [];
+                
+                // Contar verdes y encontrar celdas vacías
+                line.forEach(cellIndex => {
+                    if (gameState.board[cellIndex] === 1) greenCount++;
+                    else if (gameState.board[cellIndex] === 0) emptyCells.push(cellIndex);
+                });
+                
+                // Si la línea ya tiene 4 verdes, no hacer nada (aunque esto solo pasa si el usuario verifica)
+                if (greenCount === 4) return;
+                
+                // Asignar puntuación a cada celda vacía en esta línea
+                // Cuantos más verdes tenga la línea, mayor la prioridad
+                // Cuantas menos celdas vacías, mayor la prioridad
+                const linePriority = greenCount * 10 + (4 - emptyCells.length) * 5;
+                
+                // Prioridad extra para líneas con 3 verdes (¡casi completas!)
+                if (greenCount === 3) {
+                    emptyCells.forEach(cellIndex => {
+                        gameState.recommendations[cellIndex] += linePriority * 2;
+                    });
+                } else {
+                    emptyCells.forEach(cellIndex => {
+                        gameState.recommendations[cellIndex] += linePriority;
+                    });
+                }
+            });
+            
+            // Aplicar recomendaciones visuales
+            applyRecommendations();
+        }
+
+        // Aplicar recomendaciones visuales a las celdas
+        function applyRecommendations() {
+            // Encontrar la puntuación máxima para normalizar
+            const maxScore = Math.max(...gameState.recommendations);
+            
+            // Aplicar clases a cada celda según su puntuación
+            for (let i = 0; i < 16; i++) {
+                const cell = document.querySelector(`.cell[data-index="${i}"]`);
+                const score = gameState.recommendations[i];
+                
+                // Remover clases de recomendación previas
+                cell.classList.remove('recommended', 'high-priority');
+                
+                // Solo recomendar celdas vacías
+                if (gameState.board[i] === 0 && score > 0) {
+                    // Normalizar score (0-1)
+                    const normalizedScore = maxScore > 0 ? score / maxScore : 0;
+                    
+                    if (normalizedScore > 0.7) {
+                        cell.classList.add('high-priority');
+                    } else if (normalizedScore > 0.3) {
+                        cell.classList.add('recommended');
+                    }
+                }
+            }
+        }
+
+        // Verificar manualmente si hay líneas completas
+        function checkForWin() {
+            gameState.winningLines = [];
+            
+            for (const line of gameState.lines) {
+                const isComplete = line.every(cellIndex => gameState.board[cellIndex] === 1);
+                
+                if (isComplete) {
+                    gameState.winningLines.push(line);
+                }
+            }
+            
+            if (gameState.winningLines.length > 0) {
+                gameState.gameOver = true;
+                showWinMessage();
+                
+                // Resaltar las líneas ganadoras
+                gameState.winningLines.forEach(line => {
+                    line.forEach(cellIndex => {
+                        const cell = document.querySelector(`.cell[data-index="${cellIndex}"]`);
+                        cell.classList.add('winning-line');
+                    });
+                });
+                
+                return true;
+            }
+            
+            return false;
+        }
+
+        // Remover efectos de línea ganadora
+        function removeWinningLineEffects() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.classList.remove('winning-line');
+            });
+        }
+
+        // Actualizar estado del botón de verificación
+        function updateCheckWinButton() {
+            // Contar cuántas líneas tienen 3 verdes
+            let linesWith3Greens = 0;
+            
+            for (const line of gameState.lines) {
+                let greenCount = 0;
+                line.forEach(cellIndex => {
+                    if (gameState.board[cellIndex] === 1) greenCount++;
+                });
+                
+                if (greenCount === 3) {
+                    linesWith3Greens++;
+                }
+            }
+            
+            // Habilitar el botón solo si hay al menos una línea con 3 verdes
+            if (linesWith3Greens > 0) {
+                checkWinBtn.disabled = false;
+                checkWinBtn.title = `Verificar ${linesWith3Greens} línea(s) con 3 verdes`;
+            } else {
+                checkWinBtn.disabled = true;
+                checkWinBtn.title = "No hay líneas con 3 verdes para verificar";
+            }
+        }
+
+        // Mostrar mensaje de victoria
+        function showWinMessage() {
+            winMessageElement.style.display = 'block';
+            modalOverlayElement.style.display = 'block';
+        }
+
+        // Ocultar mensaje de victoria
+        function hideWinMessage() {
+            winMessageElement.style.display = 'none';
+            modalOverlayElement.style.display = 'none';
+        }
+
+        // Reiniciar el juego
+        function resetGame() {
+            gameState.board = Array(16).fill(0);
+            gameState.recommendations = Array(16).fill(0);
+            gameState.gameOver = false;
+            gameState.winningLines = [];
+            
+            initBoard();
+            hideWinMessage();
+        }
+
+        // Mostrar/ocultar leyenda
+        function toggleLegend() {
+            const legend = document.getElementById('legend');
+            if (legend.style.display === 'none' || legend.style.display === '') {
+                legend.style.display = 'grid';
+                legendBtn.innerHTML = '<span>📋</span> Ocultar Leyenda';
+            } else {
+                legend.style.display = 'none';
+                legendBtn.innerHTML = '<span>📋</span> Mostrar Leyenda';
+            }
+        }
+
+        // Inicializar eventos
+        resetBtn.addEventListener('click', resetGame);
+        checkWinBtn.addEventListener('click', () => {
+            const hasWin = checkForWin();
+            if (!hasWin) {
+                // Si no hay línea completa, mostrar un mensaje temporal
+                const originalText = checkWinBtn.innerHTML;
+                checkWinBtn.innerHTML = '<span>❌</span> Sin líneas completas';
+                checkWinBtn.disabled = true;
+                
+                setTimeout(() => {
+                    checkWinBtn.innerHTML = originalText;
+                    updateCheckWinButton();
+                }, 1500);
+            }
+        });
+        legendBtn.addEventListener('click', toggleLegend);
+        closeWinBtn.addEventListener('click', hideWinMessage);
+        modalOverlayElement.addEventListener('click', hideWinMessage);
+
+        // Inicializar el juego
+        initBoard();
+    </script>
+</body>
+</html>
